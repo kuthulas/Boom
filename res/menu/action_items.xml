@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/atn_direct_discover"
+        android:icon="@drawable/ic_action_discover"
+        android:title="@string/discover_peers_button"
+        android:showAsAction="ifRoom|withText" />
+    <item 
+        android:id="@+id/show_music" 
+        android:title="Music"
+        android:icon="@drawable/ic_action_refresh"
+        android:showAsAction="ifRoom|withText" />
+    <item 
+        android:id="@+id/exit" 
+        android:title="Exit"
+        android:icon="@drawable/ic_action_remove"
+        android:showAsAction="ifRoom|withText" />
+</menu>
