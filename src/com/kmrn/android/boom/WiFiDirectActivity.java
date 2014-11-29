@@ -294,6 +294,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
   	        	    	}
   	        	    	try {
 							mp.setDataSource(mc.getString(1));
+							mp.prepare();
 						} catch (IllegalArgumentException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -307,15 +308,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
- 	        	         try {
-							mp.prepare();
-						} catch (IllegalStateException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+  	        	    	
  	        	         mp.start();
   	        	     mp.setOnCompletionListener(new OnCompletionListener() {
 

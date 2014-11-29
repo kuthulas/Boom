@@ -41,35 +41,34 @@ public class BoomManager extends Activity implements OnClickListener {
 		pause_button = (Button) findViewById(R.id.pause);
 		play_button.setOnClickListener(this);
 		pause_button.setOnClickListener(this);
-    	
-    	
-  	     Cursor mCursor = null;
-  	     try {
-  	    	String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
-  	         mCursor = getContentResolver().query(
-  	             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, selection, null, "_id");
 
-  	         Toast.makeText(this, Integer.toString(mCursor.getCount())+ " songs found!",Toast.LENGTH_SHORT).show();
-  	         String[] columns = {MediaStore.Audio.Media.TITLE};
-  	         int[] to = new int[] {android.R.id.text1};
-  	         
-  	         SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this, R.layout.mylist, mCursor, columns, to, 0);
+		Cursor mCursor = null;
+		try {
+			String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+			mCursor = getContentResolver().query(
+					MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, selection, null, "_id");
 
-  	         if (mCursor.getCount() != 0) {
-  	        	 ListView listView = (ListView) findViewById(R.id.mylist);
-  	        	 listView.setAdapter(cursorAdapter);
-  	        	listView.setOnItemClickListener(new OnItemClickListener() {
-  	        	    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-  	        	    	TextView textViewItem = ((TextView) view.findViewById(android.R.id.text1));
-  	        	    	String listItemText = textViewItem.getText().toString();
-  	        	    	String s = MediaStore.Audio.Media.TITLE + " = '"+ listItemText +"'";
-  	        	    	Cursor mc = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s, null, null);
-  	        	    	mc.moveToNext();
-  	        	    	if(mp.isPlaying()){
-  	        	         mp.stop();
-  	        	         mp.reset();
-  	        	    	}
-  	        	    	try {
+			Toast.makeText(this, Integer.toString(mCursor.getCount())+ " songs found!",Toast.LENGTH_SHORT).show();
+			String[] columns = {MediaStore.Audio.Media.TITLE};
+			int[] to = new int[] {android.R.id.text1};
+
+			SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this, R.layout.mylist, mCursor, columns, to, 0);
+
+			if (mCursor.getCount() != 0) {
+				ListView listView = (ListView) findViewById(R.id.mylist);
+				listView.setAdapter(cursorAdapter);
+				listView.setOnItemClickListener(new OnItemClickListener() {
+					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+						TextView textViewItem = ((TextView) view.findViewById(android.R.id.text1));
+						String listItemText = textViewItem.getText().toString();
+						String s = MediaStore.Audio.Media.TITLE + " = '"+ listItemText +"'";
+						Cursor mc = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s, null, null);
+						mc.moveToNext();
+						if(mp.isPlaying()){
+							mp.stop();
+							mp.reset();
+						}
+						try {
 							mp.setDataSource(mc.getString(1));
 						} catch (IllegalArgumentException e) {
 							// TODO Auto-generated catch block
@@ -84,7 +83,7 @@ public class BoomManager extends Activity implements OnClickListener {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
- 	        	         try {
+						try {
 							mp.prepare();
 							seek_bar.setMax(mp.getDuration());
 						} catch (IllegalStateException e) {
@@ -94,20 +93,20 @@ public class BoomManager extends Activity implements OnClickListener {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
- 	        	         mp.start();
-  	        	     mp.setOnCompletionListener(new OnCompletionListener() {
+						mp.start();
+						mp.setOnCompletionListener(new OnCompletionListener() {
 
-  	        	         public void onCompletion(MediaPlayer mPlayer) {
-  	        	             mp.release();
-  	        	         }
-  	        	     
+							public void onCompletion(MediaPlayer mPlayer) {
+								mp.release();
+							}
 
-  	        	     });
-  	        	    }
-  	        	});
-  	         }
-  	     } catch (Exception e) {e.printStackTrace();}
-  	     
+
+						});
+					}
+				});
+			}
+		} catch (Exception e) {e.printStackTrace();}
+
 
 	}
 
