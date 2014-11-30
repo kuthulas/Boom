@@ -39,28 +39,27 @@ public final class R {
         public static final int section_header=0x7f02000a;
     }
     public static final class id {
-        public static final int atn_direct_discover=0x7f080014;
+        public static final int atn_direct_discover=0x7f080013;
         public static final int btn_connect=0x7f080000;
         public static final int btn_disconnect=0x7f080001;
         public static final int btn_start_client=0x7f080002;
-        public static final int device_address=0x7f080003;
-        public static final int device_details=0x7f080013;
-        public static final int device_info=0x7f080004;
-        public static final int device_name=0x7f080012;
-        public static final int frag_detail=0x7f080011;
-        public static final int frag_list=0x7f080010;
-        public static final int group_ip=0x7f080006;
-        public static final int group_owner=0x7f080005;
-        public static final int icon=0x7f080007;
-        public static final int linearLayout1=0x7f08000f;
-        public static final int my_name=0x7f080008;
-        public static final int my_status=0x7f080009;
-        public static final int mylist=0x7f08000a;
-        public static final int next=0x7f08000e;
-        public static final int pause=0x7f08000d;
-        public static final int previous=0x7f08000c;
-        public static final int seek_bar=0x7f08000b;
-        public static final int show_music=0x7f080015;
+        public static final int device_details=0x7f080012;
+        public static final int device_info=0x7f080003;
+        public static final int device_name=0x7f080011;
+        public static final int frag_detail=0x7f08000f;
+        public static final int frag_list=0x7f08000e;
+        public static final int group_ip=0x7f080005;
+        public static final int group_owner=0x7f080004;
+        public static final int icon=0x7f080006;
+        public static final int linearLayout1=0x7f080010;
+        public static final int my_name=0x7f080007;
+        public static final int my_status=0x7f080008;
+        public static final int mylist=0x7f080009;
+        public static final int next=0x7f08000d;
+        public static final int pause=0x7f08000c;
+        public static final int previous=0x7f08000b;
+        public static final int seek_bar=0x7f08000a;
+        public static final int show_music=0x7f080014;
     }
     public static final class layout {
         public static final int device_detail=0x7f030000;
@@ -74,20 +73,18 @@ public final class R {
     }
     public static final class string {
         public static final int app_name=0x7f050000;
-        public static final int client_text=0x7f050009;
-        public static final int connect_peer_button=0x7f050003;
-        public static final int disconnect_peer_button=0x7f050004;
-        public static final int discover_peers_button=0x7f050002;
-        public static final int empty=0x7f050006;
-        public static final int empty_message=0x7f05000a;
-        public static final int enable_p2p_button=0x7f050001;
-        public static final int group_owner_text=0x7f05000c;
-        public static final int label_deck=0x7f05000e;
-        public static final int label_peers=0x7f05000d;
-        public static final int no=0x7f050008;
-        public static final int p2p_off_warning=0x7f05000b;
-        public static final int start_activity=0x7f050005;
-        public static final int yes=0x7f050007;
+        public static final int connect_peer_button=0x7f050002;
+        public static final int disconnect_peer_button=0x7f050003;
+        public static final int discover_peers_button=0x7f050001;
+        public static final int empty=0x7f050005;
+        public static final int empty_message=0x7f050008;
+        public static final int group_owner_text=0x7f05000a;
+        public static final int label_deck=0x7f05000c;
+        public static final int label_peers=0x7f05000b;
+        public static final int no=0x7f050007;
+        public static final int p2p_off_warning=0x7f050009;
+        public static final int start_activity=0x7f050004;
+        public static final int yes=0x7f050006;
     }
     public static final class style {
         /**  ActionBar styles 

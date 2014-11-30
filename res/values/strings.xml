@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Boom</string>
-    <string name="enable_p2p_button">P2P On/Off</string>
     <string name="discover_peers_button">Discover</string>
     <string name="connect_peer_button">Connect</string>
     <string name="disconnect_peer_button">Disconnect</string>
-    <string name="start_activity">Start</string>
+    <string name="start_activity">Sync</string>
     <string name="empty"></string>
     <string name="yes">yes</string>
     <string name="no">no</string>
-    <string name="client_text">This device will act as a client. Click on Gallery button to pick a local(stored) file</string>
-    <string name="empty_message">No peers to show.\nClick action bar icon to find peers.</string>
+    <string name="empty_message">No peers to show.\nClick action bar icon to find nearby peers.</string>
     <string name="p2p_off_warning">Enable WiDi from system settings</string>
-    <string name="group_owner_text">"Am I the Group Owner? "</string>
-    <string name="label_peers">WiDi Radar</string>
-    <string name="label_deck">Music</string>
+    <string name="group_owner_text">&quot;Group Owner: &quot;</string>
+    <string name="label_peers">Discovered Peers</string>
+    <string name="label_deck">Local Music Files</string>
 </resources>

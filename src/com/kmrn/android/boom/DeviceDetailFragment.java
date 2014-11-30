@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -12,6 +13,7 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,8 +61,10 @@ import java.net.DatagramSocket;
 				if (progressDialog != null && progressDialog.isShowing()) {
 					progressDialog.dismiss();
 				}
-				progressDialog = ProgressDialog.show(getActivity(), "Press back to cancel",
-						"Connecting to :" + device.deviceAddress, true, true);
+				progressDialog = new ProgressDialog(getActivity());
+		        progressDialog.setMessage("Requesting Connection!");
+		        progressDialog.setCancelable(true);
+		        progressDialog.show();
 				((DeviceActionListener) getActivity()).connect(config);
 
 			}
@@ -125,9 +129,7 @@ import java.net.DatagramSocket;
 	public void showDetails(WifiP2pDevice device) {
 		this.device = device;
 		this.getView().setVisibility(View.VISIBLE);
-		TextView view = (TextView) mContentView.findViewById(R.id.device_address);
-		view.setText(device.deviceAddress);
-		view = (TextView) mContentView.findViewById(R.id.device_info);
+		TextView view = (TextView) mContentView.findViewById(R.id.device_info);
 		view.setText(device.toString());
 
 	}
@@ -137,9 +139,7 @@ import java.net.DatagramSocket;
 	 */
 	public void resetViews() {
 		mContentView.findViewById(R.id.btn_connect).setVisibility(View.VISIBLE);
-		TextView view = (TextView) mContentView.findViewById(R.id.device_address);
-		view.setText(R.string.empty);
-		view = (TextView) mContentView.findViewById(R.id.device_info);
+		TextView view = (TextView) mContentView.findViewById(R.id.device_info);
 		view.setText(R.string.empty);
 		view = (TextView) mContentView.findViewById(R.id.group_owner);
 		view.setText(R.string.empty);
@@ -176,7 +176,19 @@ import java.net.DatagramSocket;
 
 		@Override
 		protected void onPostExecute(String packet) {
+			// kmrn
 			if (packet != null) Toast.makeText(context, packet ,Toast.LENGTH_SHORT).show();
+			String[] parts = packet.split("[:]");
+			int s_time = Integer.parseInt(parts[0]); 
+			long s_position = Long.parseLong(parts[1]);
+			long my_time = System.currentTimeMillis();
+			String s_file = parts[2];
+			Cursor mc = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s_file, null, null);
+			mc.moveToNext();
+			//mp.setDataSource(mc.getString(1));
+			//mp.prepare();
+			//mp.start();
+			//mp.seekto(s_position + s_time - my_time);
 		}
 
 		@Override

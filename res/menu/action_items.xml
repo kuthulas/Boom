@@ -9,7 +9,7 @@
         android:showAsAction="ifRoom|withText" />
     <item 
         android:id="@+id/show_music" 
-        android:title="Music"
+        android:title="Get Music"
         android:icon="@drawable/ic_action_refresh"
         android:showAsAction="ifRoom|withText" />
 </menu>

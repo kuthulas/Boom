@@ -21,6 +21,7 @@ import java.io.IOException;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.media.MediaPlayer;
@@ -68,6 +69,8 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 	private Channel channel;
 	private BroadcastReceiver receiver = null;
 	private MediaPlayer mp = new MediaPlayer();
+	private String songnow = "none";
+	
 	/**
 	 * @param isWifiP2pEnabled the isWifiP2pEnabled to set
 	 */
@@ -291,13 +294,14 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 							mp = new MediaPlayer();
 						}
 						TextView textViewItem = ((TextView) view.findViewById(android.R.id.text1));
-						String listItemText = textViewItem.getText().toString();
-						String s = MediaStore.Audio.Media.TITLE + " = '"+ listItemText.replace("'", "\'\'") +"'";
-						Cursor mc = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s, null, null);
+						songnow = textViewItem.getText().toString();
+						songnow = MediaStore.Audio.Media.TITLE + " = '"+ songnow.replace("'", "\'\'") +"'";
+						Cursor mc = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, songnow, null, null);
 						mc.moveToNext();
 						if(mp.isPlaying()){
 							mp.stop();
 							mp.reset();
+							sync_play();
 						}
 						try {
 							mp.setDataSource(mc.getString(1));
@@ -313,6 +317,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 						}
 
 						mp.start();
+						sync_play();
 						Thread runn = new Thread(new seekupdate(mp));     
 						runn.start();
 						SeekBar seek_bar = (SeekBar) findViewById(R.id.seek_bar);
@@ -322,6 +327,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 				            public void onClick(View v) {
 				            	if(mp.isPlaying()) mp.pause();
 				            	else mp.start();
+				            	sync_play();
 				            }
 				        });
 						mp.setOnCompletionListener(new OnCompletionListener() {
@@ -366,6 +372,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 	    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 	        if (fromUser) {
 	            mp.seekTo(progress);
+	            sync_play();
 	        }
 	    }
 
@@ -376,6 +383,15 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
 		}
+	}
+	
+	private void sync_play(){
+		Intent serviceIntent = new Intent(WiFiDirectActivity.this, Broadcaster.class);
+		serviceIntent.setAction(Broadcaster.ACTION_SYNC_PLAY);
+        serviceIntent.putExtra(Broadcaster.EXTRAS_CURRENT_TIME, System.currentTimeMillis());
+        serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_POSITION, mp.getCurrentPosition() );
+        serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_TITLE, songnow);
+        WiFiDirectActivity.this.startService(serviceIntent);
 	}
 
 }
