@@ -107,21 +107,13 @@ import java.net.DatagramSocket;
 		view = (TextView) mContentView.findViewById(R.id.device_info);
 		view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
 
-		// After the group negotiation, we assign the group owner as the file
-		// server. The file server is single threaded, single connection server
-		// socket.
-
-		// Start listening whoever you are.
-			Thread lis = new Thread(runner);     
-			lis.start();
-
 		if (info.groupFormed && info.isGroupOwner) {
 			mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
 		} else if (info.groupFormed) {
-
+			Thread lis = new Thread(runner);     
+			lis.start();
 		}
 
-		// hide the connect button
 		mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
 	}
 
@@ -184,10 +176,7 @@ import java.net.DatagramSocket;
 
 		@Override
 		protected void onPostExecute(String packet) {
-			if (packet != null) {
-				Toast.makeText(context, packet ,Toast.LENGTH_SHORT).show();
-			}
-			else Toast.makeText(context, "Error!" ,Toast.LENGTH_SHORT).show();
+			if (packet != null) Toast.makeText(context, packet ,Toast.LENGTH_SHORT).show();
 		}
 
 		@Override

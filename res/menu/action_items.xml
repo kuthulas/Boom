@@ -12,9 +12,4 @@
         android:title="Music"
         android:icon="@drawable/ic_action_refresh"
         android:showAsAction="ifRoom|withText" />
-    <item 
-        android:id="@+id/exit" 
-        android:title="Exit"
-        android:icon="@drawable/ic_action_remove"
-        android:showAsAction="ifRoom|withText" />
 </menu>

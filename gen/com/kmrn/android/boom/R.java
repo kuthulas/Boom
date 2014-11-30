@@ -33,11 +33,10 @@ public final class R {
         public static final int ic_action_play=0x7f020004;
         public static final int ic_action_previous=0x7f020005;
         public static final int ic_action_refresh=0x7f020006;
-        public static final int ic_action_remove=0x7f020007;
-        public static final int ic_launcher=0x7f020008;
-        public static final int layers=0x7f020009;
-        public static final int machine=0x7f02000a;
-        public static final int section_header=0x7f02000b;
+        public static final int ic_launcher=0x7f020007;
+        public static final int layers=0x7f020008;
+        public static final int machine=0x7f020009;
+        public static final int section_header=0x7f02000a;
     }
     public static final class id {
         public static final int atn_direct_discover=0x7f080014;
@@ -48,7 +47,6 @@ public final class R {
         public static final int device_details=0x7f080013;
         public static final int device_info=0x7f080004;
         public static final int device_name=0x7f080012;
-        public static final int exit=0x7f080016;
         public static final int frag_detail=0x7f080011;
         public static final int frag_list=0x7f080010;
         public static final int group_ip=0x7f080006;
