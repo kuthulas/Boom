@@ -141,9 +141,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.pause:
-			if(mp.isPlaying()){ mp.pause();}
-			else{ mp.start(); }
-	
+			if(mp.isPlaying()) mp.pause(); else mp.start();
 		case R.id.show_music:
 			playmanager();
 			return true;

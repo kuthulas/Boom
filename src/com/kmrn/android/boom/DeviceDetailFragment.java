@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -19,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.kmrn.android.boom.Broadcaster;
 import com.kmrn.android.boom.DeviceListFragment.DeviceActionListener;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -77,7 +75,7 @@ import java.net.DatagramSocket;
 					}
 				});
 
-		mContentView.findViewById(R.id.btn_start_client).setOnClickListener(
+		/* mContentView.findViewById(R.id.btn_start_client).setOnClickListener(
 				new View.OnClickListener() {
 
 					@Override
@@ -87,7 +85,7 @@ import java.net.DatagramSocket;
 						// serviceIntent.setAction(Broadcaster.ACTION_SEND_FILE);
 						getActivity().startService(serviceIntent);
 					}
-				});
+				}); */
 
 		return mContentView;
 	}
@@ -110,7 +108,6 @@ import java.net.DatagramSocket;
 		view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
 
 		if (info.groupFormed && info.isGroupOwner) {
-			mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
 			((WiFiDirectActivity)getActivity()).set_group_owner(true);
 		} else if (info.groupFormed) {
 			Thread lis = new Thread(runner);
@@ -142,8 +139,6 @@ import java.net.DatagramSocket;
 		view.setText(R.string.empty);
 		view = (TextView) mContentView.findViewById(R.id.group_owner);
 		view.setText(R.string.empty);
-		mContentView.findViewById(R.id.btn_start_client).setVisibility(View.GONE);
-		this.getView().setVisibility(View.GONE);
 	}
 
 	public static class AsyncListenTask extends AsyncTask<Void, Void, String> {
