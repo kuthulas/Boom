@@ -5,7 +5,6 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -13,7 +12,6 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +21,6 @@ import android.widget.Toast;
 
 import com.kmrn.android.boom.Broadcaster;
 import com.kmrn.android.boom.DeviceListFragment.DeviceActionListener;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -38,7 +35,8 @@ import java.net.DatagramSocket;
 	private View mContentView = null;
 	private WifiP2pDevice device;
 	ProgressDialog progressDialog = null;
-
+	WiFiDirectActivity activity = (WiFiDirectActivity) getActivity();
+	
 	private static boolean async_running = false;
 
 	@Override
@@ -113,8 +111,9 @@ import java.net.DatagramSocket;
 
 		if (info.groupFormed && info.isGroupOwner) {
 			mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
+			((WiFiDirectActivity)getActivity()).set_group_owner(true);
 		} else if (info.groupFormed) {
-			Thread lis = new Thread(runner);     
+			Thread lis = new Thread(runner);
 			lis.start();
 		}
 
@@ -176,25 +175,30 @@ import java.net.DatagramSocket;
 
 		@Override
 		protected void onPostExecute(String packet) {
-			// kmrn
 			if (packet != null) Toast.makeText(context, packet ,Toast.LENGTH_SHORT).show();
 			String[] parts = packet.split("[:]");
-			int s_time = Integer.parseInt(parts[0]); 
-			long s_position = Long.parseLong(parts[1]);
-			long my_time = System.currentTimeMillis();
+			long s_time = Long.parseLong(parts[0]); 
+			int s_position = Integer.parseInt(parts[1]);
 			String s_file = parts[2];
-			Cursor mc = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s_file, null, null);
-			mc.moveToNext();
-			//mp.setDataSource(mc.getString(1));
-			//mp.prepare();
-			//mp.start();
-			//mp.seekto(s_position + s_time - my_time);
+			
+			try {
+				((WiFiDirectActivity)context).sync_play(s_time, s_position, s_file);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
 
 		@Override
 		protected void onPreExecute() {}
 	}
-
+	
 	Runnable runner = new Runnable() {      
 	    @Override
 	    public void run() {

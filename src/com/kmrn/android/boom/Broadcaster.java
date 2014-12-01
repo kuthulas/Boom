@@ -32,7 +32,6 @@ public class Broadcaster extends IntentService {
 			InetAddress host = InetAddress.getByName("192.168.49.255");
 			socket = new DatagramSocket();
 			socket.setBroadcast(true);
-			// String data = "KMRN";
 			String data = time + ":" + position + ":" + file;
 			DatagramPacket packet = new DatagramPacket(data .getBytes(), data.length(),
 					host, 8988);

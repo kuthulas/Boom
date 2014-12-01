@@ -70,6 +70,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 	private BroadcastReceiver receiver = null;
 	private MediaPlayer mp = new MediaPlayer();
 	private String songnow = "none";
+	boolean group_owner = false;
 	
 	/**
 	 * @param isWifiP2pEnabled the isWifiP2pEnabled to set
@@ -301,7 +302,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 						if(mp.isPlaying()){
 							mp.stop();
 							mp.reset();
-							sync_play();
+							send_sync();
 						}
 						try {
 							mp.setDataSource(mc.getString(1));
@@ -317,7 +318,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 						}
 
 						mp.start();
-						sync_play();
+						send_sync();
 						Thread runn = new Thread(new seekupdate(mp));     
 						runn.start();
 						SeekBar seek_bar = (SeekBar) findViewById(R.id.seek_bar);
@@ -327,7 +328,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 				            public void onClick(View v) {
 				            	if(mp.isPlaying()) mp.pause();
 				            	else mp.start();
-				            	sync_play();
+				            	send_sync();
 				            }
 				        });
 						mp.setOnCompletionListener(new OnCompletionListener() {
@@ -372,7 +373,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 	    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 	        if (fromUser) {
 	            mp.seekTo(progress);
-	            sync_play();
+	            send_sync();
 	        }
 	    }
 
@@ -385,13 +386,30 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 		}
 	}
 	
-	private void sync_play(){
+	public void set_group_owner(boolean group_owner){
+		this.group_owner = group_owner;
+	}
+	
+	public void send_sync(){
+		if(group_owner){
 		Intent serviceIntent = new Intent(WiFiDirectActivity.this, Broadcaster.class);
 		serviceIntent.setAction(Broadcaster.ACTION_SYNC_PLAY);
         serviceIntent.putExtra(Broadcaster.EXTRAS_CURRENT_TIME, System.currentTimeMillis());
         serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_POSITION, mp.getCurrentPosition() );
         serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_TITLE, songnow);
         WiFiDirectActivity.this.startService(serviceIntent);
+		}
+	}
+	
+	public void sync_play(long s_time, int s_position, String s_file) throws IllegalArgumentException, SecurityException, IllegalStateException, IOException{
+		long my_time = System.currentTimeMillis();
+		Cursor mc = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s_file, null, null);
+		mc.moveToNext();
+		mp.setDataSource(mc.getString(1));
+		mp.prepare();
+		mp.start();
+		int delay = (int) (s_time - my_time);
+		mp.seekTo(s_position + delay);
 	}
 
 }
