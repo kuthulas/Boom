@@ -373,7 +373,6 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 	    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 	        if (fromUser) {
 	            mp.seekTo(progress);
-	            send_sync();
 	        }
 	    }
 
@@ -383,6 +382,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
+			send_sync();
 		}
 	}
 	
@@ -405,10 +405,14 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 		long my_time = System.currentTimeMillis();
 		Cursor mc = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s_file, null, null);
 		mc.moveToNext();
-		mp.setDataSource(mc.getString(1));
-		mp.prepare();
-		mp.start();
 		int delay = (int) (s_time - my_time);
+		if(songnow != s_file) {
+			mp.stop();
+			mp.reset();
+			mp.setDataSource(mc.getString(1));
+			mp.prepare();
+			mp.start();
+		}
 		mp.seekTo(s_position + delay);
 	}
 
