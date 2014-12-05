@@ -17,7 +17,6 @@
 package com.kmrn.android.boom;
 
 import java.io.IOException;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -48,7 +47,6 @@ import android.widget.SeekBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.kmrn.android.boom.DeviceListFragment.DeviceActionListener;
 
 /**
@@ -71,7 +69,8 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 	private MediaPlayer mp = new MediaPlayer();
 	private String songnow = "none";
 	boolean group_owner = false;
-	
+	private long go_offset;
+
 	/**
 	 * @param isWifiP2pEnabled the isWifiP2pEnabled to set
 	 */
@@ -140,8 +139,6 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.pause:
-			if(mp.isPlaying()) mp.pause(); else mp.start();
 		case R.id.show_music:
 			playmanager();
 			return true;
@@ -267,12 +264,29 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 				});
 			}
 		}
-
 	}
 
 	private void playmanager(){
 		Cursor mCursor = null;
 		try {
+			
+			SeekBar seek_bar = (SeekBar) findViewById(R.id.seek_bar);
+			seek_bar.setOnSeekBarChangeListener(new seekbarread());
+			ImageButton pause_button = (ImageButton) findViewById(R.id.pause);
+			pause_button.setOnClickListener(new OnClickListener() {
+				public void onClick(View v) {
+					if(mp.isPlaying()) mp.pause();
+					else mp.start();
+					send_sync();
+				}
+			});
+			mp.setOnCompletionListener(new OnCompletionListener() {
+				public void onCompletion(MediaPlayer mPlayer) {
+					mp.release();
+				}
+
+			});
+			
 			String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 			mCursor = getContentResolver().query(
 					MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, selection, null, "_id");
@@ -282,7 +296,6 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 			int[] to = new int[] {android.R.id.text1};
 
 			SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this, R.layout.mylist, mCursor, columns, to, 0);
-
 			if (mCursor.getCount() != 0) {
 				ListView listView = (ListView) findViewById(R.id.mylist);
 				listView.setAdapter(cursorAdapter);
@@ -300,7 +313,6 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 						if(mp.isPlaying()){
 							mp.stop();
 							mp.reset();
-							send_sync();
 						}
 						try {
 							mp.setDataSource(mc.getString(1));
@@ -319,34 +331,18 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 						send_sync();
 						Thread runn = new Thread(new seekupdate(mp));     
 						runn.start();
-						SeekBar seek_bar = (SeekBar) findViewById(R.id.seek_bar);
-						seek_bar.setOnSeekBarChangeListener(new seekbarread());
-						ImageButton pause_button = (ImageButton) findViewById(R.id.pause);
-						pause_button.setOnClickListener(new OnClickListener() {
-				            public void onClick(View v) {
-				            	if(mp.isPlaying()) mp.pause();
-				            	else mp.start();
-				            	send_sync();
-				            }
-				        });
-						mp.setOnCompletionListener(new OnCompletionListener() {
-							public void onCompletion(MediaPlayer mPlayer) {
-								mp.release();
-							}
-
-						});
 					}
 				});
 			}
-
 		} catch (Exception e) {e.printStackTrace();}
+
 	}
 
 	class seekupdate implements Runnable {
-        MediaPlayer mp;
-        seekupdate(MediaPlayer m) { mp = m; }
-        public void run() {
-        	while(mp.isPlaying()){
+		MediaPlayer mp;
+		seekupdate(MediaPlayer m) { mp = m; }
+		public void run() {
+			while(mp.isPlaying()){
 				SeekBar seek_bar = (SeekBar) findViewById(R.id.seek_bar);
 				int currentPosition = 0;
 				int total = mp.getDuration();
@@ -363,16 +359,16 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 					seek_bar.setProgress(currentPosition);
 				}
 			}
-        }
-    }
-	
+		}
+	}
+
 	class seekbarread implements SeekBar.OnSeekBarChangeListener{
 		@Override
-	    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-	        if (fromUser) {
-	            mp.seekTo(progress);
-	        }
-	    }
+		public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			if (fromUser) {
+				mp.seekTo(progress);
+			}
+		}
 
 		@Override
 		public void onStartTrackingTouch(SeekBar seekBar) {
@@ -383,33 +379,40 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 			send_sync();
 		}
 	}
-	
+
 	public void set_group_owner(boolean group_owner){
 		this.group_owner = group_owner;
 	}
-	
+
+	public void set_go_offset(long offset){
+		this.go_offset = offset;
+	}
+
 	public void send_sync(){
 		if(group_owner){
-		Intent serviceIntent = new Intent(WiFiDirectActivity.this, Broadcaster.class);
-		serviceIntent.setAction(Broadcaster.ACTION_SYNC_PLAY);
-        serviceIntent.putExtra(Broadcaster.EXTRAS_CURRENT_TIME, System.currentTimeMillis());
-        serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_POSITION, mp.getCurrentPosition() );
-        serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_TITLE, songnow);
-        WiFiDirectActivity.this.startService(serviceIntent);
+			Intent serviceIntent = new Intent(WiFiDirectActivity.this, Broadcaster.class);
+			serviceIntent.setAction(Broadcaster.ACTION_SYNC_PLAY);
+			serviceIntent.putExtra(Broadcaster.EXTRAS_CURRENT_TIME, System.currentTimeMillis());
+			serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_POSITION, mp.getCurrentPosition() );
+			serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_TITLE, songnow);
+			WiFiDirectActivity.this.startService(serviceIntent);
 		}
 	}
-	
+
 	public void sync_play(long s_time, int s_position, String s_file) throws IllegalArgumentException, SecurityException, IllegalStateException, IOException{
 		long my_time = System.currentTimeMillis();
 		Cursor mc = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s_file, null, null);
 		mc.moveToNext();
-		int delay = (int) (s_time - my_time);
+		int delay = (int) (s_time - my_time - go_offset);
+		Log.d("kmrn", "Offset: " + String.valueOf(go_offset));
 		if(songnow != s_file) {
 			mp.stop();
 			mp.reset();
 			mp.setDataSource(mc.getString(1));
 			mp.prepare();
 			mp.start();
+			Thread runn = new Thread(new seekupdate(mp));     
+			runn.start();
 		}
 		mp.seekTo(s_position + delay);
 	}

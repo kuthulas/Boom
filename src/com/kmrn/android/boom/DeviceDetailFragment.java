@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -28,13 +29,11 @@ import java.net.DatagramSocket;
  * i.e. setting up network connection and transferring data.
  */
 @SuppressLint("InflateParams") public class DeviceDetailFragment extends Fragment implements ConnectionInfoListener {
-
 	protected static final int CHOOSE_FILE_RESULT_CODE = 20;
 	private View mContentView = null;
 	private WifiP2pDevice device;
 	ProgressDialog progressDialog = null;
 	WiFiDirectActivity activity = (WiFiDirectActivity) getActivity();
-	
 	private static boolean async_running = false;
 
 	@Override
@@ -58,9 +57,9 @@ import java.net.DatagramSocket;
 					progressDialog.dismiss();
 				}
 				progressDialog = new ProgressDialog(getActivity());
-		        progressDialog.setMessage("Requesting Connection!");
-		        progressDialog.setCancelable(true);
-		        progressDialog.show();
+				progressDialog.setMessage("Requesting Connection!");
+				progressDialog.setCancelable(true);
+				progressDialog.show();
 				((DeviceActionListener) getActivity()).connect(config);
 
 			}
@@ -75,18 +74,6 @@ import java.net.DatagramSocket;
 					}
 				});
 
-		/* mContentView.findViewById(R.id.btn_start_client).setOnClickListener(
-				new View.OnClickListener() {
-
-					@Override
-					public void onClick(View v) {
-						// kmrn
-						Intent serviceIntent = new Intent(getActivity(), Broadcaster.class);
-						// serviceIntent.setAction(Broadcaster.ACTION_SEND_FILE);
-						getActivity().startService(serviceIntent);
-					}
-				}); */
-
 		return mContentView;
 	}
 
@@ -97,23 +84,25 @@ import java.net.DatagramSocket;
 		}
 		this.getView().setVisibility(View.VISIBLE);
 
-		// The owner IP is now known.
 		TextView view = (TextView) mContentView.findViewById(R.id.group_owner);
 		view.setText(getResources().getString(R.string.group_owner_text)
 				+ ((info.isGroupOwner == true) ? getResources().getString(R.string.yes)
 						: getResources().getString(R.string.no)));
 
-		// InetAddress from WifiP2pInfo struct.
 		view = (TextView) mContentView.findViewById(R.id.device_info);
 		view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
 
+		Intent serviceIntent = new Intent(getActivity(), Broadcaster.class);
+		serviceIntent.setAction(Broadcaster.ACTION_SEND_TIME);
+		getActivity().startService(serviceIntent);
+
 		if (info.groupFormed && info.isGroupOwner) {
 			((WiFiDirectActivity)getActivity()).set_group_owner(true);
+
 		} else if (info.groupFormed) {
 			Thread lis = new Thread(runner);
 			lis.start();
 		}
-
 		mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
 	}
 
@@ -127,7 +116,6 @@ import java.net.DatagramSocket;
 		this.getView().setVisibility(View.VISIBLE);
 		TextView view = (TextView) mContentView.findViewById(R.id.device_info);
 		view.setText(device.toString());
-
 	}
 
 	/**
@@ -170,39 +158,43 @@ import java.net.DatagramSocket;
 
 		@Override
 		protected void onPostExecute(String packet) {
-			if (packet != null) Toast.makeText(context, packet ,Toast.LENGTH_SHORT).show();
 			String[] parts = packet.split("[:]");
-			long s_time = Long.parseLong(parts[0]); 
-			int s_position = Integer.parseInt(parts[1]);
-			String s_file = parts[2];
-			
-			try {
-				((WiFiDirectActivity)context).sync_play(s_time, s_position, s_file);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (IllegalStateException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
+			if(parts[0].equals("SYNC")){
+				long s_time = Long.parseLong(parts[1]);
+				int s_position = Integer.parseInt(parts[2]);
+				String s_file = parts[3];
+
+				try {
+					((WiFiDirectActivity)context).sync_play(s_time, s_position, s_file);
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (SecurityException e) {
+					e.printStackTrace();
+				} catch (IllegalStateException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-			
+			if(parts[0].equals("TIME")){
+				Toast.makeText(context, parts[1] ,Toast.LENGTH_SHORT).show();
+				((WiFiDirectActivity)context).set_go_offset(System.currentTimeMillis() - Long.parseLong(parts[1]));
+			}
 		}
 
 		@Override
 		protected void onPreExecute() {}
 	}
-	
+
 	Runnable runner = new Runnable() {      
-	    @Override
-	    public void run() {
-	        while(true){
-	        	if(!async_running) {
-	        		new AsyncListenTask(getActivity()).execute();
-	        		async_running = true;
-	        	}
-	        	}
-	        }           
-	    };
+		@Override
+		public void run() {
+			while(true){
+				if(!async_running) {
+					new AsyncListenTask(getActivity()).execute();
+					async_running = true;
+				}
+			}
+		}           
+	};
 }
