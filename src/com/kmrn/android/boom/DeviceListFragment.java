@@ -148,9 +148,9 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
 	public void updateThisDevice(WifiP2pDevice device) {
 		this.device = device;
 		TextView view = (TextView) mContentView.findViewById(R.id.my_name);
-		view.setText("Host: "+ (String)device.deviceName);
+		view.setText("Host: " + (String)device.deviceName);
 		view = (TextView) mContentView.findViewById(R.id.my_status);
-		view.setText(getDeviceStatus(device.status));
+		view.setText("Status: " + getDeviceStatus(device.status));
 	}
 
 	@Override

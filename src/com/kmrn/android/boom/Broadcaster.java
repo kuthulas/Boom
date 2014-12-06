@@ -14,8 +14,7 @@ public class Broadcaster extends IntentService {
 	public static final String EXTRAS_CURRENT_TIME = "time";
 	public static final String EXTRAS_PLAY_POSITION = "position";
 	public static final String EXTRAS_PLAY_TITLE = "file";
-
-	public static final String ACTION_SEND_TIME = "com.kmrn.android.boom.SEND_TIME";
+	public static final String EXTRAS_PLAY_PAUSE = "playpause";
 
 	public Broadcaster(String name) {
 		super(name);
@@ -30,15 +29,11 @@ public class Broadcaster extends IntentService {
 		DatagramSocket socket = null;
 		String data = null;
 
-		if(intent.getAction().equals(ACTION_SYNC_PLAY)){
-			long time = intent.getExtras().getLong(EXTRAS_CURRENT_TIME);
-			int position = intent.getExtras().getInt(EXTRAS_PLAY_POSITION);
-			String file = intent.getExtras().getString(EXTRAS_PLAY_TITLE);
-			data = "SYNC" + ":" + time + ":" + position + ":" + file + ":";
-		}
-		else if(intent.getAction().equals(ACTION_SEND_TIME)){
-			data = "TIME" + ":" + String.valueOf(System.currentTimeMillis()) + ":";
-		}
+		long time = intent.getExtras().getLong(EXTRAS_CURRENT_TIME);
+		int position = intent.getExtras().getInt(EXTRAS_PLAY_POSITION);
+		String file = intent.getExtras().getString(EXTRAS_PLAY_TITLE);
+		int playpause = intent.getExtras().getInt(EXTRAS_PLAY_PAUSE);
+		data = "SYNC" + ":" + time + ":" + position + ":" + file + ":" + playpause + ":" + String.valueOf(System.currentTimeMillis()) + ":";
 
 		try {
 			InetAddress host = InetAddress.getByName("192.168.49.255");

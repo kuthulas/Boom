@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -16,8 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.Button;
 
 import com.kmrn.android.boom.DeviceListFragment.DeviceActionListener;
 import java.io.IOException;
@@ -35,7 +33,7 @@ import java.net.DatagramSocket;
 	ProgressDialog progressDialog = null;
 	WiFiDirectActivity activity = (WiFiDirectActivity) getActivity();
 	private static boolean async_running = false;
-
+	private static boolean device_state = false;
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -49,30 +47,27 @@ import java.net.DatagramSocket;
 
 			@Override
 			public void onClick(View v) {
-				WifiP2pConfig config = new WifiP2pConfig();
-				config.deviceAddress = device.deviceAddress;
-				config.groupOwnerIntent = 15;
-				config.wps.setup = WpsInfo.PBC;
-				if (progressDialog != null && progressDialog.isShowing()) {
-					progressDialog.dismiss();
+				if(!device_state){
+					WifiP2pConfig config = new WifiP2pConfig();
+					config.deviceAddress = device.deviceAddress;
+					config.groupOwnerIntent = 15;
+					config.wps.setup = WpsInfo.PBC;
+					if (progressDialog != null && progressDialog.isShowing()) {
+						progressDialog.dismiss();
+					}
+					progressDialog = new ProgressDialog(getActivity());
+					progressDialog.setMessage("Requesting Connection!");
+					progressDialog.setCancelable(true);
+					progressDialog.show();
+					((DeviceActionListener) getActivity()).connect(config);
 				}
-				progressDialog = new ProgressDialog(getActivity());
-				progressDialog.setMessage("Requesting Connection!");
-				progressDialog.setCancelable(true);
-				progressDialog.show();
-				((DeviceActionListener) getActivity()).connect(config);
-
+				else {
+					((DeviceActionListener) getActivity()).disconnect();
+					Button btn = (Button)mContentView.findViewById(R.id.btn_connect);
+					btn.setText("Connect");
+				}
 			}
 		});
-
-		mContentView.findViewById(R.id.btn_disconnect).setOnClickListener(
-				new View.OnClickListener() {
-
-					@Override
-					public void onClick(View v) {
-						((DeviceActionListener) getActivity()).disconnect();
-					}
-				});
 
 		return mContentView;
 	}
@@ -84,18 +79,6 @@ import java.net.DatagramSocket;
 		}
 		this.getView().setVisibility(View.VISIBLE);
 
-		TextView view = (TextView) mContentView.findViewById(R.id.group_owner);
-		view.setText(getResources().getString(R.string.group_owner_text)
-				+ ((info.isGroupOwner == true) ? getResources().getString(R.string.yes)
-						: getResources().getString(R.string.no)));
-
-		view = (TextView) mContentView.findViewById(R.id.device_info);
-		view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
-
-		Intent serviceIntent = new Intent(getActivity(), Broadcaster.class);
-		serviceIntent.setAction(Broadcaster.ACTION_SEND_TIME);
-		getActivity().startService(serviceIntent);
-
 		if (info.groupFormed && info.isGroupOwner) {
 			((WiFiDirectActivity)getActivity()).set_group_owner(true);
 
@@ -103,7 +86,8 @@ import java.net.DatagramSocket;
 			Thread lis = new Thread(runner);
 			lis.start();
 		}
-		mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
+		Button btn = (Button)mContentView.findViewById(R.id.btn_connect);
+		btn.setText("Disconnect");
 	}
 
 	/**
@@ -114,19 +98,14 @@ import java.net.DatagramSocket;
 	public void showDetails(WifiP2pDevice device) {
 		this.device = device;
 		this.getView().setVisibility(View.VISIBLE);
-		TextView view = (TextView) mContentView.findViewById(R.id.device_info);
-		view.setText(device.toString());
 	}
 
 	/**
 	 * Clears the UI fields after a disconnect or direct mode disable operation.
 	 */
 	public void resetViews() {
-		mContentView.findViewById(R.id.btn_connect).setVisibility(View.VISIBLE);
-		TextView view = (TextView) mContentView.findViewById(R.id.device_info);
-		view.setText(R.string.empty);
-		view = (TextView) mContentView.findViewById(R.id.group_owner);
-		view.setText(R.string.empty);
+		Button btn = (Button)mContentView.findViewById(R.id.btn_connect);
+		btn.setText("Connect");
 	}
 
 	public static class AsyncListenTask extends AsyncTask<Void, Void, String> {
@@ -163,9 +142,11 @@ import java.net.DatagramSocket;
 				long s_time = Long.parseLong(parts[1]);
 				int s_position = Integer.parseInt(parts[2]);
 				String s_file = parts[3];
+				int s_play = Integer.parseInt(parts[4]);
+				((WiFiDirectActivity)context).set_go_offset(System.currentTimeMillis() - Long.parseLong(parts[5]));
 
 				try {
-					((WiFiDirectActivity)context).sync_play(s_time, s_position, s_file);
+					((WiFiDirectActivity)context).sync_play(s_time, s_position, s_file, s_play);
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
 				} catch (SecurityException e) {
@@ -175,10 +156,6 @@ import java.net.DatagramSocket;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			}
-			if(parts[0].equals("TIME")){
-				Toast.makeText(context, parts[1] ,Toast.LENGTH_SHORT).show();
-				((WiFiDirectActivity)context).set_go_offset(System.currentTimeMillis() - Long.parseLong(parts[1]));
 			}
 		}
 
@@ -197,4 +174,10 @@ import java.net.DatagramSocket;
 			}
 		}           
 	};
+
+	public void state_update(WifiP2pDevice device) {
+		if(device.status != WifiP2pDevice.CONNECTED) 
+			device_state = false;
+		else device_state = true;
+	}
 }

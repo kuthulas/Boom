@@ -12,5 +12,5 @@
     <string name="p2p_off_warning">Enable WiDi from system settings</string>
     <string name="group_owner_text">&quot;Group Owner: &quot;</string>
     <string name="label_peers">Discovered Peers</string>
-    <string name="label_deck">Local Music Files</string>
+    <string name="label_deck">Music Browser</string>
 </resources>
