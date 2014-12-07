@@ -47,6 +47,8 @@ import android.widget.SeekBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.kmrn.android.boom.DeviceDetailFragment.AsyncListenTask;
 import com.kmrn.android.boom.DeviceListFragment.DeviceActionListener;
 
 /**
@@ -265,6 +267,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 
 	private void playmanager(){
 		Cursor mCursor = null;
+		//new Thread(runner).start();
 		try {
 
 			SeekBar seek_bar = (SeekBar) findViewById(R.id.seek_bar);
@@ -274,12 +277,12 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 				public void onClick(View v) {       
 					if(mp.isPlaying()) {
 						mp.pause();
-						send_sync(0);
+						send_sync(System.currentTimeMillis(), mp.getCurrentPosition(), 0);
 						((ImageButton) v).setImageResource(R.drawable.ic_action_play);
 					}
 					else {
 						mp.start();
-						send_sync(1);
+						send_sync(System.currentTimeMillis(), mp.getCurrentPosition(), 1);
 						Thread runn = new Thread(new seekupdate(mp));     
 						runn.start();
 						((ImageButton) v).setImageResource(R.drawable.ic_action_pause);
@@ -336,9 +339,10 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 						TextView timeDur = (TextView)findViewById(R.id.dur);
 						timeDur.setText(getTimeString(mp.getDuration()));
 						mp.start();
-						send_sync(1);
+						send_sync(System.currentTimeMillis(), mp.getCurrentPosition(), 1);
 						Thread runn = new Thread(new seekupdate(mp));     
 						runn.start();
+						
 					}
 				});
 			}
@@ -374,7 +378,7 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 			@Override
 			public void run() {
 				TextView tp = (TextView)findViewById(R.id.pos);
-				tp.setText(getTimeString(s));
+				tp.setText(getTimeString(mp.getCurrentPosition()));
 			}
 		});
 	}
@@ -395,8 +399,8 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 
 		@Override
 		public void onStopTrackingTouch(SeekBar seekBar) {
-			if(mp.isPlaying() )send_sync(1);
-			else send_sync(0);
+			if(mp.isPlaying() )send_sync(System.currentTimeMillis(), mp.getCurrentPosition(), 1);
+			else send_sync(System.currentTimeMillis(), mp.getCurrentPosition(), 0);
 		}
 	}
 
@@ -408,23 +412,37 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 		this.go_offset = offset;
 	}
 
-	public void send_sync(int playpause){
+	public void send_sync(long currenttime, int cposition, int playpause){
 		if(group_owner){
 			Intent serviceIntent = new Intent(WiFiDirectActivity.this, Broadcaster.class);
 			serviceIntent.setAction(Broadcaster.ACTION_SYNC_PLAY);
-			serviceIntent.putExtra(Broadcaster.EXTRAS_CURRENT_TIME, System.currentTimeMillis());
-			serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_POSITION, mp.getCurrentPosition() );
+			serviceIntent.putExtra(Broadcaster.EXTRAS_CURRENT_TIME, currenttime);
+			serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_POSITION, cposition );
 			serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_TITLE, songnow);
 			serviceIntent.putExtra(Broadcaster.EXTRAS_PLAY_PAUSE, playpause);
 			WiFiDirectActivity.this.startService(serviceIntent);
 		}
 	}
 
+	Runnable runner = new Runnable() {      
+		@Override
+		public void run() {
+			while(true){
+				if(mp.isPlaying())
+				send_sync(System.currentTimeMillis(), mp.getCurrentPosition(), 1);
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}           
+	};
 	public void sync_play(long s_time, int s_position, String s_file, int s_play) throws IllegalArgumentException, SecurityException, IllegalStateException, IOException{
-		long my_time = System.currentTimeMillis();
 		Cursor mc = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, s_file, null, null);
 		mc.moveToNext();
-		int delay = (int) (s_time - my_time - go_offset);
+		
 		if(!songnow.equals(s_file)) {
 			mp.stop();
 			mp.reset();
@@ -438,7 +456,8 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 			Thread runn = new Thread(new seekupdate(mp));     
 			runn.start();
 		}
-		mp.seekTo(s_position + delay);
+		
+		mp.seekTo(s_position + (int)(System.currentTimeMillis() - s_time - go_offset));
 		if(s_play == 0) mp.pause();
 		else if(s_play==1 && !mp.isPlaying()) {
 			mp.start();
@@ -456,12 +475,15 @@ public class WiFiDirectActivity extends Activity implements ChannelListener, Dev
 		int hours = (int) (millis / (1000 * 60 * 60));
 		int minutes = (int) ((millis % (1000 * 60 * 60)) / (1000 * 60));
 		int seconds = (int) (((millis % (1000 * 60 * 60)) % (1000 * 60)) / 1000);
+		int milliseconds = (int)(millis % 1000);
 		buf
 		.append(String.format("%02d", hours))
 		.append(":")
 		.append(String.format("%02d", minutes))
 		.append(":")
-		.append(String.format("%02d", seconds));
+		.append(String.format("%02d", seconds))
+		.append(":")
+		.append(String.format("%03d", milliseconds));
 		return buf.toString();
 	}
 }

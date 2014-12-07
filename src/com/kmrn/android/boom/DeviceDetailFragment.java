@@ -124,6 +124,8 @@ import java.net.DatagramSocket;
 				byte[] buf = new byte[1024];
 				DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
+				//String[] parts = new String(packet.getData()).split("[:]");
+				//((WiFiDirectActivity)context).set_go_offset(System.currentTimeMillis() - Long.parseLong(parts[0]));
 				Log.d("kmrn", "Async received!");
 				socket.close();
 				async_running = false;
@@ -138,24 +140,22 @@ import java.net.DatagramSocket;
 		@Override
 		protected void onPostExecute(String packet) {
 			String[] parts = packet.split("[:]");
-			if(parts[0].equals("SYNC")){
-				long s_time = Long.parseLong(parts[1]);
-				int s_position = Integer.parseInt(parts[2]);
-				String s_file = parts[3];
-				int s_play = Integer.parseInt(parts[4]);
-				((WiFiDirectActivity)context).set_go_offset(System.currentTimeMillis() - Long.parseLong(parts[5]));
+			((WiFiDirectActivity)context).set_go_offset(System.currentTimeMillis() - Long.parseLong(parts[0]));
+			long s_time = Long.parseLong(parts[1]);
+			int s_position = Integer.parseInt(parts[2]);
+			String s_file = parts[3];
+			int s_play = Integer.parseInt(parts[4]);
 
-				try {
-					((WiFiDirectActivity)context).sync_play(s_time, s_position, s_file, s_play);
-				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					e.printStackTrace();
-				} catch (IllegalStateException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			try {
+				((WiFiDirectActivity)context).sync_play(s_time, s_position, s_file, s_play);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 

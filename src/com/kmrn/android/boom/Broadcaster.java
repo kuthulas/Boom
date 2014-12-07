@@ -33,12 +33,12 @@ public class Broadcaster extends IntentService {
 		int position = intent.getExtras().getInt(EXTRAS_PLAY_POSITION);
 		String file = intent.getExtras().getString(EXTRAS_PLAY_TITLE);
 		int playpause = intent.getExtras().getInt(EXTRAS_PLAY_PAUSE);
-		data = "SYNC" + ":" + time + ":" + position + ":" + file + ":" + playpause + ":" + String.valueOf(System.currentTimeMillis()) + ":";
 
 		try {
 			InetAddress host = InetAddress.getByName("192.168.49.255");
 			socket = new DatagramSocket();
 			socket.setBroadcast(true);
+			data = String.valueOf(System.currentTimeMillis()) + ":" + time + ":" + position + ":" + file + ":" + playpause + ":";
 			DatagramPacket packet = new DatagramPacket(data .getBytes(), data.length(),
 					host, 8988);
 			socket.send(packet);
